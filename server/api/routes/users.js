@@ -4,6 +4,6 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const user_controller = require("../controller/user.controller");
 
-router.get("/me", auth, user_controller.profile);
+router.get("/profile", auth, user_controller.profile); // GET /profile
 
 module.exports = router;
