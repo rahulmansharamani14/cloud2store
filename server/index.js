@@ -4,6 +4,11 @@ const connection = require("./api/config/db");
 const cors = require("cors");
 const express = require("express");
 const app = express();
+const path = require("path");
+
+// view engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "hbs");
 
 connection();
 
