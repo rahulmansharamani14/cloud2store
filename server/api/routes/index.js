@@ -6,6 +6,11 @@ router.get("/", (req, res) => {
     res.render("pages/index");
 });
 
+router.get("/cp", (req, res) => {
+    console.log("GET profile");
+    res.render("pages/profile");
+});
+
 router.use("/", require("./users"));
 router.use("/auth", require("./auth"));
 router.use("/file", require("./files"));
