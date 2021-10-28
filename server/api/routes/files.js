@@ -6,6 +6,6 @@ const auth = require("../middleware/auth");
 
 router.post("/upload", files_controller.uploadBlob);
 
-router.get("/list", auth, files_controller.listBlob);
+router.get("/list", auth.ensureAuthenticated, files_controller.listBlob);
 
 module.exports = router;

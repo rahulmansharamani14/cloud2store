@@ -37,10 +37,9 @@ module.exports.uploadBlob = async (req, res, next) => {
     res.json({ requestId, blobName: name });
 };
 
-module.exports.listBlob = async (req, res, next) => {
-    console.log("Userid:", req.user._id);
+module.exports.listBlob = async (containerID) => {
     let result = [];
-    const containerClient = blobServiceClient.getContainerClient(req.user._id);
+    const containerClient = blobServiceClient.getContainerClient(containerID);
 
     try {
         let blobs = containerClient.listBlobsFlat();
@@ -50,7 +49,7 @@ module.exports.listBlob = async (req, res, next) => {
     } catch (err) {
         console.error("err:::", err);
     }
-    res.json(result);
+    return result;
 };
 
 module.exports.deleteBlob = async (req, res, next) => {

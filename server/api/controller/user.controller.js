@@ -1,11 +1,14 @@
 const { User } = require("../models/user");
+const { listBlob } = require("../controller/file.controller");
 
 module.exports.profile = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.user._id).select("-password -__v");
-        res.send(user);
-    } catch (error) {
-        console.log(error);
-        res.send("An error occured");
-    }
+    const unique_id = "" + req.user["_id"];
+
+    const files = await listBlob(unique_id);
+
+    console.log("user: ", req.user);
+    console.log("unique_id: ", unique_id);
+    console.log("files: ", files);
+
+    res.json({ user: req.user, files });
 };

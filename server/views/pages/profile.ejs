@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Profile</title>
+    </head>
+    <body>
+        <h1>File Versioning App</h1>
+
+        <br />
+
+        <h2>Upload Files</h2>
+        <br />
+
+        <form id="upload-form" enctype="multipart/form-data">
+            <h2>Select an file to upload:</h2>
+            <div class="upload-container"><input id="file-picker" name="file-picker" type="file" name="image" /></div>
+            <br />
+            <div><input type="submit" value="Upload Image" /></div>
+        </form>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"
+            integrity="sha512-u9akINsQsAkG9xjc1cnGF4zw5TFDwkxuc9vUp5dltDWYCSmyd0meygbvgXrlc/z7/o4a19Fb5V0OUE58J7dcyw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                function handleForm() {
+                    const form = document.getElementById("upload-form");
+
+                    form.addEventListener("submit", async (e) => {
+                        e.preventDefault();
+
+                        let photo = document.getElementById("file-picker").files[0];
+
+                        console.log("photo: " + photo);
+
+                        let formData = new FormData(form);
+                        const obj = {};
+                        const file = formData.get("file-picker");
+                        obj.content = file;
+                        obj.containerName = "thumbnails";
+
+                        console.log("file: ", file);
+                        console.log(obj);
+
+                        axios.post("/api/file/upload", obj).then(function (response) {
+                            console.log(response);
+                        });
+                    });
+                }
+
+                handleForm();
+
+                const message = document.getElementById("message");
+                const picker = document.getElementById("file-picker");
+
+                document.getElementById("upload-form").addEventListener("submit", (e) => {
+                    message.innerText = "";
+
+                    if (!picker.files.length) {
+                        message.innerText = "Please select an image to upload.";
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
