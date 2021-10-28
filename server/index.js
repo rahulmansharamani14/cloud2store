@@ -18,7 +18,7 @@ app.use(fileUpload());
 require("./api/config/passport")(passport);
 
 // view engine setup
-app.set("views", path.join(__dirname, "views"));
+app.set("views", "views");
 app.set("view engine", "ejs");
 
 connection();
