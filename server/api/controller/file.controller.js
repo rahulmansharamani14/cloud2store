@@ -16,11 +16,7 @@ main()
 // Create the BlobServiceClient object which will be used to create a container client
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
-module.exports.uploadBlob = async (req, res, next) => {
-    console.log(req.body);
-
-    const containerName = req.body.containerName;
-    const content = req.body.content;
+module.exports.uploadBlob = async (containerName, content) => {
     const containerClient = blobServiceClient.getContainerClient(containerName);
     let requestId = "";
     let name = "";
@@ -34,7 +30,9 @@ module.exports.uploadBlob = async (req, res, next) => {
     } catch (err) {
         console.error("err:::", err);
     }
-    res.json({ requestId, blobName: name });
+
+    const data = { requestId, blobName: name };
+    return data;
 };
 
 module.exports.listBlob = async (containerID) => {
@@ -101,7 +99,54 @@ module.exports.createContainer = async (containerName) => {
     console.log("Container was created successfully. requestId: ", createContainerResponse.requestId);
 };
 
+const downloadBlob = async (containerName, blobName) => {
+    // const containerName = req.params.containerName
+    // const blobName = req.params.blobName
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobClient = containerClient.getBlobClient(blobName);
+
+    // Get blob content from position 0 to the end
+    // In Node.js, get downloaded data by accessing downloadBlockBlobResponse.readableStreamBody
+    const downloadBlockBlobResponse = await blobClient.download();
+    const downloaded = (await streamToBuffer(downloadBlockBlobResponse.readableStreamBody)).toString();
+    console.log("Downloaded blob content:", downloaded);
+
+    async function streamToBuffer(readableStream) {
+        return new Promise((resolve, reject) => {
+            const chunks = [];
+            readableStream.on("data", (data) => {
+                chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+            });
+            readableStream.on("end", () => {
+                resolve(Buffer.concat(chunks));
+            });
+            readableStream.on("error", reject);
+        });
+    }
+
+    const data = {
+        content: downloaded,
+    };
+    return data;
+};
+
+const deleteBlobs = async (containerName, blobName) => {
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobClient = containerClient.getBlobClient(blobName);
+
+    // Get blob content from position 0 to the end
+    // In Node.js, get downloaded data by accessing downloadBlockBlobResponse.readableStreamBody
+    const response = await blobClient.deleteIfExists();
+    console.log(response.requestId);
+
+    const data = {
+        requestId: response.requestId,
+    };
+
+    return data;
+};
+
 const a = async () => {
-    const b = await checkContainer(blobServiceClient, "thumbnails");
+    const b = await downloadBlob("617a9471f8a5ce375280474b", "Profile.png");
     console.log(b);
 };

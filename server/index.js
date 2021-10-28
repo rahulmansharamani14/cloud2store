@@ -1,13 +1,18 @@
 require("dotenv").config();
 
-const connection = require("./api/config/db");
-const cors = require("cors");
 const express = require("express");
 const app = express();
+
+const connection = require("./api/config/db");
+const cors = require("cors");
 const path = require("path");
 const passport = require("passport");
 const session = require("express-session");
 var cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
+
+// default options
+app.use(fileUpload());
 
 // Passport Config
 require("./api/config/passport")(passport);
