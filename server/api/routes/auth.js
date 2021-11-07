@@ -34,6 +34,8 @@ router.post("/register", (req, res) => {
         errors.push({ msg: "Password must be at least 6 characters" });
     }
 
+    console.log("errors: ", errors);
+
     if (errors.length > 0) {
         res.render("pages/register", {
             errors,
