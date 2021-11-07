@@ -5,6 +5,7 @@ const FileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+
     downloadURl: {
         type: String,
         required: true,
@@ -12,6 +13,7 @@ const FileSchema = new mongoose.Schema({
     mimetype: {
         type: String,
         required: true,
+
     },
 });
 

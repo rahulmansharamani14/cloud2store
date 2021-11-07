@@ -135,7 +135,10 @@ const deleteBlobs = async (containerName, blobName) => {
     };
 
     return data;
+
 };
+
+
 
 // const a = async () => {
 //     const b = await downloadBlob("617a9471f8a5ce375280474b", "Profile.png");

@@ -12,6 +12,7 @@ const multer = require("multer"),
 //const files_controller = require("../controller/file.controller");
 const auth = require("../middleware/auth");
 
+
 const File = require("../models/file");
 const User = require("../models/user");
 
@@ -114,6 +115,12 @@ router.post("/upload", uploadStrategy, async (req, res) => {
         .catch((error) => {
             console.log("Error", error);
         });
+});
+
+
+
+router.get("/upload", (req, res) => {
+    res.send("all good");
 });
 
 module.exports = router;
