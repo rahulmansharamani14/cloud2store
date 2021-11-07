@@ -5,7 +5,7 @@ const FileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    filepath: {
+    downloadURl: {
         type: String,
         required: true,
     },
