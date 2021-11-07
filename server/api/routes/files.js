@@ -15,40 +15,6 @@ const auth = require("../middleware/auth");
 const File = require("../models/file");
 const User = require("../models/user");
 
-//const { upload } = require("../middleware/upload");
-
-// router.post("/upload", upload.single("myFile"), async (req, res) => {
-//     console.log(req.file);
-//     try {
-//         const file = new File({
-//             filename: req.file.filename,
-//             filepath: req.file.path,
-//             mimetype: req.file.mimetype,
-//         });
-
-//         console.log(file);
-
-//         const filecreated = await file.save();
-
-//         const user = await User.findById(req.user["_id"]).exec();
-
-//         user.files.push(file);
-//         await user.save();
-
-//         console.log("File created: " + filecreated);
-
-//         res.status(200).json({
-//             status: "success",
-//             message: "File created successfully!!",
-//             filecreated: filecreated,
-//         });
-//     } catch (error) {
-//         res.json({
-//             error,
-//         });
-//     }
-// });
-
 router.get("/getFiles", async (req, res) => {
     try {
         const files = await User.findById(req.user["_id"]).populate("files").exec();
@@ -81,43 +47,73 @@ router.post("/upload", uploadStrategy, async (req, res) => {
 
     console.log("containerName: " + containerName + typeof containerName);
 
-    try {
-        const file = new File({
-            filename: req.file.originalname,
-            mimetype: req.file.mimetype,
-            downloadURl: `https://${process.env.account}.blob.core.windows.net/${containerName}/${blobName}`,
-        });
+    //Upload to Azure Storage
+    var startDate = new Date();
+    var expiryDate = new Date(startDate);
+    expiryDate.setMinutes(startDate.getMinutes() + 100);
+    startDate.setMinutes(startDate.getMinutes() - 100);
 
-        const filecreated = await file.save();
+    var sharedAccessPolicy = {
+        AccessPolicy: {
+            Permissions: azureStorage.BlobUtilities.SharedAccessPermissions.READ,
+            Start: startDate,
+            Expiry: expiryDate,
+        },
+    };
 
-        const user = await User.findById(req.user["_id"]).exec();
+    let promise = new Promise(function (resolve, reject) {
+        blobService.createBlockBlobFromStream(containerName, blobName, stream, streamLength, (err) => {
+            if (err) {
+                res.status(500);
+                res.json({
+                    err,
+                });
+                reject(new Error({ msg: "It does not work" }));
+            }
 
-        user.files.push(file);
-        await user.save();
+            var token = blobService.generateSharedAccessSignature(containerName, blobName, sharedAccessPolicy);
+            var sasUrl = blobService.getUrl(containerName, blobName, token);
 
-        console.log(file);
-        console.log("File created: " + filecreated);
-    } catch (error) {
-        console.log("error:", error);
-        res.json({
-            error,
-        });
-        return;
-    }
-
-    blobService.createBlockBlobFromStream(containerName, blobName, stream, streamLength, (err) => {
-        if (err) {
-            res.status(500);
-            res.json({
-                err,
-            });
-            return;
-        }
-
-        res.json({
-            message: "File uploaded to Azure Blob storage.",
+            console.log("sasUrl: " + sasUrl);
+            //return sasUrl.toString();
+            resolve({ downloadURL: sasUrl.toString() });
         });
     });
+    promise
+        .then(async (result) => {
+            console.log("Success", result);
+            //Add metadata to Mongodb
+            try {
+                const file = new File({
+                    filename: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    downloadURl: result.downloadURL,
+                });
+
+                const filecreated = await file.save();
+
+                const user = await User.findById(req.user["_id"]).exec();
+
+                user.files.push(file);
+                await user.save();
+
+                console.log(file);
+                console.log("File created: " + filecreated);
+
+                res.json({
+                    message: "File uploaded to Azure Blob storage.",
+                });
+            } catch (error) {
+                console.log("error:", error);
+                res.json({
+                    error,
+                });
+                return;
+            }
+        })
+        .catch((error) => {
+            console.log("Error", error);
+        });
 });
 
 module.exports = router;
