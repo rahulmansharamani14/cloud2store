@@ -4,15 +4,6 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 const { v1: uuidv1 } = require("uuid");
 const formidable = require("formidable");
 
-async function main() {
-    console.log("Azure Blob storage v12 - JavaScript quickstart sample");
-    // Quick start code goes here
-}
-
-main()
-    .then(() => console.log("Done"))
-    .catch((ex) => console.log(ex.message));
-
 // Create the BlobServiceClient object which will be used to create a container client
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
@@ -146,7 +137,7 @@ const deleteBlobs = async (containerName, blobName) => {
     return data;
 };
 
-const a = async () => {
-    const b = await downloadBlob("617a9471f8a5ce375280474b", "Profile.png");
-    console.log(b);
-};
+// const a = async () => {
+//     const b = await downloadBlob("617a9471f8a5ce375280474b", "Profile.png");
+//     console.log(b);
+// };

@@ -13,6 +13,6 @@ router.get("/cp", (req, res) => {
 
 router.use("/", require("./users"));
 router.use("/auth", require("./auth"));
-router.use("/file", require("./files"));
+router.use("/", require("./files"));
 
 module.exports = router;
