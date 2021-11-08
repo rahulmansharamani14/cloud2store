@@ -87,7 +87,7 @@ router.post("/upload", uploadStrategy, async (req, res) => {
                 const file = new File({
                     filename: req.file.originalname,
                     mimetype: req.file.mimetype,
-                    downloadURl: result.downloadURL,
+                    downloadURL: result.downloadURL,
                 });
 
                 const filecreated = await file.save();
@@ -100,9 +100,7 @@ router.post("/upload", uploadStrategy, async (req, res) => {
                 console.log(file);
                 console.log("File created: " + filecreated);
 
-                res.json({
-                    message: "File uploaded to Azure Blob storage.",
-                });
+                res.redirect("/profile");
             } catch (error) {
                 console.log("error:", error);
                 res.json({
