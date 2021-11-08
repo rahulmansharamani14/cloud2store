@@ -5,15 +5,13 @@ const FileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
-    downloadURl: {
+    downloadURL: {
         type: String,
         required: true,
     },
     mimetype: {
         type: String,
         required: true,
-
     },
 });
 

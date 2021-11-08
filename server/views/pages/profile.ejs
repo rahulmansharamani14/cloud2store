@@ -103,31 +103,24 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>S.No.</th>
                             <th scope="col">File Name</th>
-                            <th scope="col">Version</th>
+                            <th scope="col">Mime Type</th>
                             <th scope="col">Download</th>
                             <th scope="col">Delete</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <% files.map((file,index) =>{ %>
+
                         <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td><button type="button" class="btn btn-primary">Download</button></td>
-                            <td><button type="button" class="btn btn-danger">Danger</button></td>
+                            <td><%= index + 1 %> </td>
+                            <th scope="row"><%= file.filename %> </th>
+                            <td> <%= file.mimetype %> </td>
+                            <td> <a href="<%= file.downloadURL %>" class="btn btn-primary">Download</a></td>
+                            <td><button type="button" class="btn btn-danger">Delete</button></td>
                         </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td><button type="button" class="btn btn-primary">Download</button></td>
-                            <td><button type="button" class="btn btn-danger">Danger</button></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td><button type="button" class="btn btn-primary">Download</button></td>
-                            <td><button type="button" class="btn btn-danger">Danger</button></td>
-                        </tr>
+                        <% }) %>
                     </tbody>
                 </table>
             </div>
@@ -139,7 +132,7 @@
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
         ></script>
-        <script>
+        <!-- <script>
             const parentDiv = document.querySelector(".admin");
             window.addEventListener("load", async () => {
                 try {
@@ -154,7 +147,7 @@
                     console.log(error);
                 }
             });
-        </script>
+        </script> -->
         <script
             src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
             integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
