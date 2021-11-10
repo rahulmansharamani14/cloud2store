@@ -2,80 +2,48 @@ require("dotenv").config();
 
 const { BlobServiceClient } = require("@azure/storage-blob");
 const { v1: uuidv1 } = require("uuid");
-const formidable = require("formidable");
+const azureStorage = require("azure-storage");
+const storage = require("@azure/storage-blob");
 
+const cerds = new storage.StorageSharedKeyCredential(process.env.AZURE_STORAGE_ACCOUNT, process.env.AZURE_STORAGE_ACCESS_KEY);
+
+const blobService = azureStorage.createBlobService();
 // Create the BlobServiceClient object which will be used to create a container client
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
-module.exports.uploadBlob = async (containerName, content) => {
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    let requestId = "";
-    let name = "";
-    try {
-        const blobName = "conatiner1blob";
-        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-        const uploadBlobResponse = await blockBlobClient.upload(content, content.length);
-        console.log(`Upload block blob ${blobName} successfully`, uploadBlobResponse.requestId);
-        requestId = uploadBlobResponse.requestId;
-        name = blobName;
-    } catch (err) {
-        console.error("err:::", err);
-    }
-
-    const data = { requestId, blobName: name };
-    return data;
+module.exports.uploadFile = async (containerName, blobName, file_buffer) => {
+    const client = blobServiceClient.getContainerClient(containerName);
+    const blockBlobClient = client.getBlockBlobClient(blobName);
+    const state = await blockBlobClient
+        .uploadData(file_buffer)
+        .then(() => {
+            console.log("uploaded file");
+            return true;
+        })
+        .catch((err) => {
+            console.log("err on upload file");
+            console.log(err.message);
+            return false;
+        });
+    return state;
 };
 
-module.exports.listBlob = async (containerID) => {
-    let result = [];
-    const containerClient = blobServiceClient.getContainerClient(containerID);
-
-    try {
-        let blobs = containerClient.listBlobsFlat();
-        for await (const blob of blobs) {
-            result.push(blob.name);
+module.exports.getMetaDataOnBlob = async (containerName, blobName) => {
+    let result;
+    blobService.getBlobMetadata(containerName, blobName, function (err, result, response) {
+        console.log("response: ", response);
+        if (err) {
+            console.error("Couldn't fetch metadata for blob %s", blobName);
+            console.error(err);
+        } else if (!response.isSuccessful) {
+            console.error("Blob %s wasn't found container %s", blobName, containerName);
+        } else {
+            console.log("Successfully fetched metadata for blob %s", blobName);
+            console.log(result.metadata);
+            result = result.metadata;
         }
-    } catch (err) {
-        console.error("err:::", err);
-    }
+    });
     return result;
-};
-
-module.exports.deleteBlob = async (req, res, next) => {
-    console.log("\nDeleting container...");
-
-    //const containerName = 'quickstart' + uuidv1();
-    const containerName = blobServiceClient.getContainerClient("mycontainer");
-    console.log("\t", containerName.containerName);
-    // Get a reference to a container
-    const containerClient = await blobServiceClient.getContainerClient(containerName.containerName);
-
-    // Delete container
-    const deleteContainerResponse = await containerClient.delete();
-    console.log("Container was deleted successfully. requestId: ", deleteContainerResponse.requestId);
-};
-
-const checkContainer = async (blobServiceClient, inputContainer) => {
-    let boolContainer = true;
-    let i = 1;
-    const constainers = [];
-    try {
-        for await (const container of blobServiceClient.listContainers()) {
-            console.log(`Container ${i++}: ${container.name}`);
-
-            if (container.name != inputContainer) {
-                boolContainer = true;
-            } else {
-                boolContainer = false;
-            }
-
-            //console.log(container);
-            constainers.push(container.name);
-        }
-    } catch (err) {
-        console.error("err:::", err);
-    }
-    return boolContainer;
 };
 
 module.exports.createContainer = async (containerName) => {
@@ -90,57 +58,68 @@ module.exports.createContainer = async (containerName) => {
     console.log("Container was created successfully. requestId: ", createContainerResponse.requestId);
 };
 
-const downloadBlob = async (containerName, blobName) => {
-    // const containerName = req.params.containerName
-    // const blobName = req.params.blobName
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blobClient = containerClient.getBlobClient(blobName);
+module.exports.getSASUrl = async (containerName, blobName) => {
+    const client = blobServiceClient.getContainerClient(containerName);
 
-    // Get blob content from position 0 to the end
-    // In Node.js, get downloaded data by accessing downloadBlockBlobResponse.readableStreamBody
-    const downloadBlockBlobResponse = await blobClient.download();
-    const downloaded = (await streamToBuffer(downloadBlockBlobResponse.readableStreamBody)).toString();
-    console.log("Downloaded blob content:", downloaded);
+    const startsOn = new Date();
+    startsOn.setMinutes(startsOn.getMinutes() - 5);
+    const expiresOn = new Date();
+    expiresOn.setMinutes(expiresOn.getMinutes() + 60);
 
-    async function streamToBuffer(readableStream) {
-        return new Promise((resolve, reject) => {
-            const chunks = [];
-            readableStream.on("data", (data) => {
-                chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+    const blobSAS = storage
+        .generateBlobSASQueryParameters(
+            {
+                containerName,
+                blobName,
+                permissions: storage.BlobSASPermissions.parse("racwd"),
+                startsOn,
+                expiresOn,
+            },
+            cerds
+        )
+        .toString();
+
+    //to upload file client.url + filename +"?" + blobSAS
+    const sasUrl = client.url + "/" + blobName + "?" + blobSAS;
+    console.log("SAS URL IS " + sasUrl);
+    return sasUrl;
+};
+
+module.exports.DeleteFile = async (containerName, blobName) => {
+    const client = blobServiceClient.getContainerClient(containerName);
+    const blobClient = client.getBlobClient(blobName);
+
+    const exists = await blobClient.exists();
+
+    if (exists) {
+        const state = await blobClient
+            .delete()
+            .then(() => {
+                console.log("deleted file");
+                return true;
+            })
+            .catch((err) => {
+                console.log("err on file delete");
+                console.log(err.message);
+                return false;
             });
-            readableStream.on("end", () => {
-                resolve(Buffer.concat(chunks));
-            });
-            readableStream.on("error", reject);
-        });
+
+        return state;
+    } else {
+        console.log("file does not exist to delete");
+        return false;
     }
-
-    const data = {
-        content: downloaded,
-    };
-    return data;
 };
 
-const deleteBlobs = async (containerName, blobName) => {
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blobClient = containerClient.getBlobClient(blobName);
-
-    // Get blob content from position 0 to the end
-    // In Node.js, get downloaded data by accessing downloadBlockBlobResponse.readableStreamBody
-    const response = await blobClient.deleteIfExists();
-    console.log(response.requestId);
-
-    const data = {
-        requestId: response.requestId,
-    };
-
-    return data;
-
+module.exports.deleteBlobCosmos = async (user_id, filename) => {
+    return await File.deleteOne({ user_id: user_id, filename: filename })
+        .then(() => {
+            console.log("file deleted in DB");
+            return true;
+        })
+        .catch((err) => {
+            console.log("err on file delete in DB");
+            console.log(err.message);
+            return false;
+        });
 };
-
-
-
-// const a = async () => {
-//     const b = await downloadBlob("617a9471f8a5ce375280474b", "Profile.png");
-//     console.log(b);
-// };
