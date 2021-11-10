@@ -32,7 +32,29 @@
                             <a class="nav-link" href="#">Sign up</a>
                         </li>
                     </ul>
+
+                    
                 </div>
+                <!-- <div class="dropdown d-flex justify-content-end">
+                                <img
+                                    src="../../public/assets/images/male_avatar.png"
+                                    alt="profile-pic"
+                                    class="rounded-circle w-50 h-50"
+                                    id="dropdownMenuButton"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                />
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                    <h6 class="dropdown-header"><%= user.name %></h6>
+                                    <p class="dropdown-header"><%= user.email %></p>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="/templates/settings.html"
+                                    ><i class="fas fa-sliders-h"></i>&nbsp; Settings</a
+                                    >
+                                    <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i>&nbsp; Logout</a>
+                                </div>
+                        </div> -->
             </div>
         </nav>
 
@@ -49,27 +71,69 @@
                                 fill="currentColor"
                             ></path>
                         </svg>
-                        <span class="fs-4">Jumbotron example</span>
+                        <span class="fs-4">Aryan-Rahul-Jugal Versioning App</span>
                     </a>
                 </header>
 
                 <div class="p-5 mb-4 bg-light rounded-3">
                     <div class="container-fluid py-5">
                         <h1 class="display-5 fw-bold">Upload Files</h1>
-                        <p class="col-md-8 fs-4">Use the above button to upload file.</p>
-                        <button class="btn btn-primary btn-lg" type="button">Upload</button>
+                        <p class="col-md-8 fs-4">Use the input below to upload file.</p>
+                        <form action="upload" enctype="multipart/form-data" method="POST">
+                            <!-- <input type="file" class="admin__input" id="myFile" name="myFile" />
+                            <button class="btn btn-primary btn-lg admin_input" id="myFile" name="myFile" type="button">Upload</button> 
+                            <input class="admin__submit" type="submit" />  -->
+
+                            <div class="input-group mb-3">
+                                <input type="file" class="form-control admin__input" id="myFile" name="myFile"  aria-describedby="button-addon1">
+                                <button class="admin__submit btn btn-outline-secondary" type="submit" id="button-addon1">Upload</button>
+                            </div>
+
+                        </form>
+                        <!-- <button class="btn btn-primary btn-lg" type="button">Upload</button> -->
                     </div>
                 </div>
 
                 <div class="row align-items-md-stretch">
-                    <div class="col-md-6">
-                        <div class="h-100 p-5 text-white bg-dark rounded-3">
-                            <h2>Change the background</h2>
-                            <p>Swap the background-color utility and add a `.text-*` color utility to mix up the jumbotron look. Then, mix and match with additional component themes and more.</p>
-                            <button class="btn btn-outline-light" type="button">Example button</button>
+                    <div class="h-50 p-5 text-white rounded-3">
+                    <% if(files.length === 0){ %>
+                        <div class="col-md-12 h-50">
+                            <img src="/assets/images/filepng.png" class="img-thumbnail" alt="">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <% } else{ %>
+                    <div class="col-md-12">
+                        <div class="h-100 p-5 text-white bg-dark rounded-3">
+                            <!-- <h2>Change the background</h2>
+                            <p>Swap the background-color utility and add a `.text-*` color utility to mix up the jumbotron look. Then, mix and match with additional component themes and more.</p>
+                            <button class="btn btn-outline-light" type="button">Example button</button> -->
+                                <table class="table table-striped text-light" >
+                                    <thead>
+                                        <tr>
+                                            <th>S.No.</th>
+                                            <th scope="col">File Name</th>
+                                            <th scope="col">Mime Type</th>
+                                            <th scope="col">Download</th>
+                                            <th scope="col">Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% files.map((file,index) =>{ %>
+
+                                        <tr>
+                                            <td class="text-white"><%= index + 1 %> </td>
+                                            <th class="text-white" scope="row"><%= file.filename %> </th>
+                                            <td class="text-white" > <%= file.mimetype %> </td>
+                                            <td> <a href="<%= file.downloadURL %>" class="btn btn-primary">Download</a></td>
+                                            <td> <a data-blobid="<%= file._id%>" data-blobname="<%= file.filename %> " id="delete-file" class="btn btn-danger">Delete</a></td>
+                                        </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                    <% } %>
+                    <!-- <div class="col-md-6">
                         <div class="h-100 p-5 bg-light border rounded-3">
                             <h2>Add borders</h2>
                             <p
@@ -78,15 +142,16 @@
                             >
                             <button class="btn btn-outline-secondary" type="button">Example button</button>
                         </div>
-                    </div>
+                    </div> -->
+       
                 </div>
 
                 <footer class="pt-3 mt-4 text-muted border-top"> &copy; 2021 </footer>
             </div>
             <br />
-
+<!-- 
             <h2>Upload Files</h2>
-            <br />
+            <br /> -->
 
             <!-- <form id="upload-form" action="/upload" enctype="multipart/form-data" method="POST">
                 <h2>Select an file to upload:</h2>
@@ -94,7 +159,7 @@
                 <br />
                 <div><input type="submit" value="Upload Image" /></div>
             </form> -->
-            <form action="upload" enctype="multipart/form-data" method="POST">
+            <!-- <form action="upload" enctype="multipart/form-data" method="POST">
                 <input type="file" class="admin__input" id="myFile" name="myFile" />
                 <input class="admin__submit" type="submit" />
             </form>
@@ -123,7 +188,7 @@
                         <% }) %>
                     </tbody>
                 </table>
-            </div>
+            </div> -->
         </div>
 
         <script
