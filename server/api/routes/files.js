@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 
+const crypto = require("crypto");
+const fs = require("fs");
+
 const multer = require("multer"),
     inMemoryStorage = multer.memoryStorage(),
     uploadStrategy = multer({ storage: inMemoryStorage }).single("myFile"),
@@ -45,7 +48,28 @@ router.post("/upload", uploadStrategy, async (req, res) => {
         stream = getStream(req.file.buffer),
         streamLength = req.file.buffer.length;
 
-    console.log("containerName: " + containerName + typeof containerName);
+    console.log("containerName: " + containerName);
+
+    //Generate MD5 Hash for filreq.file.buffere
+    //  const fileBuffer = fs.readFileSync("myfile.js");
+    const hashSum = crypto.createHash("sha256");
+    hashSum.update(req.file.buffer);
+
+    const hashedvalue = hashSum.digest("hex");
+    console.log("hex: ", hashedvalue);
+
+    //Check if the filename has already been in the db
+    const checksamefile = await File.find({ filename: req.file.originalname, user_id: req.user["_id"].toString() }).exec();
+
+    console.log("checksamefile: ", checksamefile);
+
+    if (checksamefile.length !== 0) {
+        if (hashedvalue.localeCompare(checksamefile.hashedvalue)) {
+            console.log("Files have same hash");
+            res.redirect("/profile?options=samefile");
+            return;
+        }
+    }
 
     //Upload to Azure Storage
     var startDate = new Date();
@@ -88,6 +112,8 @@ router.post("/upload", uploadStrategy, async (req, res) => {
                     filename: req.file.originalname,
                     mimetype: req.file.mimetype,
                     downloadURL: result.downloadURL,
+                    hashedvalue: hashedvalue,
+                    user_id: req.user["_id"].toString(),
                 });
 
                 const filecreated = await file.save();
@@ -97,8 +123,8 @@ router.post("/upload", uploadStrategy, async (req, res) => {
                 user.files.push(file);
                 await user.save();
 
-                console.log(file);
-                console.log("File created: " + filecreated);
+                // console.log(file);
+                // console.log("File created: " + filecreated);
 
                 res.redirect("/profile");
             } catch (error) {

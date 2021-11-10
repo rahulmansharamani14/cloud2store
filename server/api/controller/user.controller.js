@@ -13,7 +13,7 @@ module.exports.profile = async (req, res, next) => {
         //     files,
         // });
         const files = data.files;
-        console.log("files: ", files);
+        // console.log("files: ", files);
 
         res.render("pages/profile", { user: req.user, files });
     } catch (error) {
