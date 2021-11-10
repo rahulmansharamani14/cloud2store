@@ -14,7 +14,7 @@ var cookieParser = require("cookie-parser");
 
 // // default options
 // app.use(fileUpload());
-
+app.use(express.static(__dirname + '/public'));
 
 // Passport Config
 require("./api/config/passport")(passport);
