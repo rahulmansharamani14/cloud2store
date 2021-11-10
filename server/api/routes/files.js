@@ -94,12 +94,12 @@ router.post("/upload", uploadStrategy, async (req, res) => {
 
             return res.redirect("/profile?state=" + status.state + "&msg=" + status.msg);
         } else {
-            // file version is not matched, assign a new version
-            await File.updateOne({ filename: req.file.originalname, user_id: req.user["_id"].toString() }, { $push: { versions: { hashedvalue, version: count } } });
-
             //updatedblobname
             //Upload this version file to the storage
-            const state = fileController.uploadFile(containerName, blobName, req.file.buffer);
+            const versionId = await fileController.uploadFile(containerName, blobName, req.file.buffer);
+
+            // file version is not matched, assign a new version
+            await File.updateOne({ filename: req.file.originalname, user_id: req.user["_id"].toString() }, { $push: { versions: { hashedvalue, version: count, versionId } } });
 
             status.msg = "New version of file is uploaded";
             status.state = true;
@@ -108,7 +108,7 @@ router.post("/upload", uploadStrategy, async (req, res) => {
         }
     } else {
         //if no file version is matched, upload a new file to Azure Storage
-        const state = await fileController.uploadFile(containerName, blobName, req.file.buffer);
+        const versionId = await fileController.uploadFile(containerName, blobName, req.file.buffer);
         //const getMetaData = fileController.getMetaDataOnBlob(containerName, blobName);
         const downloadURL = await fileController.getSASUrl(containerName, blobName);
 
@@ -122,7 +122,7 @@ router.post("/upload", uploadStrategy, async (req, res) => {
                 mimetype: req.file.mimetype,
                 downloadURL: downloadURL,
                 user_id: req.user["_id"].toString(),
-                versions: { hashedvalue: hashedvalue, version: 0 },
+                versions: { hashedvalue: hashedvalue, version: 0, versionId: versionId },
             });
 
             await file.save();

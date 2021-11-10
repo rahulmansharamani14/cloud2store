@@ -16,18 +16,11 @@ const File = require("../models/file");
 module.exports.uploadFile = async (containerName, blobName, file_buffer) => {
     const client = blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = client.getBlockBlobClient(blobName);
-    const state = await blockBlobClient
-        .uploadData(file_buffer)
-        .then(() => {
-            console.log("uploaded file");
-            return true;
-        })
-        .catch((err) => {
-            console.log("err on upload file");
-            console.log(err.message);
-            return false;
-        });
-    return state;
+    const blob = await blockBlobClient.uploadData(file_buffer);
+
+    console.log("state of blob : " + blob.versionId);
+    console.log(JSON.stringify(blob));
+    return blob.versionId;
 };
 
 module.exports.getMetaDataOnBlob = async (containerName, blobName) => {
@@ -61,30 +54,26 @@ module.exports.createContainer = async (containerName) => {
 };
 
 module.exports.getSASUrl = async (containerName, blobName) => {
-    const client = blobServiceClient.getContainerClient(containerName);
+    const key = new storage.StorageSharedKeyCredential((accountName = process.env.AZURE_STORAGE_ACCOUNT), (accountKey = process.env.AZURE_STORAGE_ACCESS_KEY));
 
-    const startsOn = new Date();
-    startsOn.setMinutes(startsOn.getMinutes() - 5);
-    const expiresOn = new Date();
-    expiresOn.setMinutes(expiresOn.getMinutes() + 60);
+    //This URL will be valid for 1 hour
+    const expDate = new Date(new Date().valueOf() + 3600 * 1000);
 
-    const blobSAS = storage
+    //Set permissions to read, write, and create to write back to Azure Blob storage
+    const containerSAS = storage
         .generateBlobSASQueryParameters(
             {
-                containerName,
-                blobName,
-                permissions: storage.BlobSASPermissions.parse("racwd"),
-                startsOn,
-                expiresOn,
+                containerName: containerName,
+                permissions: "r",
+                expiresOn: expDate,
             },
-            cerds
+            key
         )
         .toString();
 
-    //to upload file client.url + filename +"?" + blobSAS
-    const sasUrl = client.url + "/" + blobName + "?" + blobSAS;
-    console.log("SAS URL IS " + sasUrl);
-    return sasUrl;
+    SaSURL = "https://" + accountName + ".blob.core.windows.net/" + containerName + "/" + blobName + "?" + containerSAS;
+    console.log(`SAS URL for blob is: ${SaSURL}`);
+    return SaSURL;
 };
 
 module.exports.DeleteFile = async (containerName, blobName) => {
