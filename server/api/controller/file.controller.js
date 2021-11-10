@@ -11,6 +11,8 @@ const blobService = azureStorage.createBlobService();
 // Create the BlobServiceClient object which will be used to create a container client
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
+const File = require("../models/file");
+
 module.exports.uploadFile = async (containerName, blobName, file_buffer) => {
     const client = blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = client.getBlockBlobClient(blobName);
@@ -86,32 +88,23 @@ module.exports.getSASUrl = async (containerName, blobName) => {
 };
 
 module.exports.DeleteFile = async (containerName, blobName) => {
-    const client = blobServiceClient.getContainerClient(containerName);
-    const blobClient = client.getBlobClient(blobName);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const state = await containerClient
+        .deleteBlob(blobName)
+        .then(() => {
+            console.log("deleted file");
+            return true;
+        })
+        .catch((err) => {
+            console.log("err on file delete");
+            console.log(err.message);
+            return false;
+        });
 
-    const exists = await blobClient.exists();
-
-    if (exists) {
-        const state = await blobClient
-            .delete()
-            .then(() => {
-                console.log("deleted file");
-                return true;
-            })
-            .catch((err) => {
-                console.log("err on file delete");
-                console.log(err.message);
-                return false;
-            });
-
-        return state;
-    } else {
-        console.log("file does not exist to delete");
-        return false;
-    }
+    return state;
 };
 
-module.exports.deleteBlobCosmos = async (user_id, filename) => {
+module.exports.deleteBlobDB = async (user_id, filename) => {
     return await File.deleteOne({ user_id: user_id, filename: filename })
         .then(() => {
             console.log("file deleted in DB");

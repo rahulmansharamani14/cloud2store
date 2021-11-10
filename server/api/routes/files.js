@@ -141,10 +141,14 @@ router.post("/upload", uploadStrategy, async (req, res) => {
     }
 });
 
-router.delete("/deleteBlob", auth.ensureAuthenticated, async (req, res, next) => {
+router.delete("/deleteBlob/:filename", auth.ensureAuthenticated, async (req, res, next) => {
     const containerName = req.user["_id"].toString();
-    const state_db = await fileController.deleteBlobDB(req.user["_id"], req.body.filename);
-    const state_blob = await fileController.DeleteFile(containerName, req.body.filename);
+    const state_db = await fileController.deleteBlobDB(req.user["_id"], req.params.filename);
+    const state_blob = await fileController.DeleteFile(containerName, req.params.filename);
+
+    console.log(state_db);
+    console.log(state_blob);
+
     if (state_db && state_blob) {
         res.json({
             success: true,

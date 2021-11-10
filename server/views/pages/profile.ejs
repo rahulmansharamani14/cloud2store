@@ -205,18 +205,18 @@
             const delete_button = document.getElementById("delete-file");
             delete_button.addEventListener("click", async () => {
                 const blobid = delete_button.dataset.blobid;
-                const blobname = delete_button.dataset.blobname;
+                const filename = delete_button.dataset.blobname;
 
                 console.log("blobid: " + blobid);
-                console.log("blobname: " + blobname);
+                console.log("blobname: " + filename);
                 try {
                     let result = await axios({
                         method: "DELETE",
-                        url: `/deleteBlob/${blobname}/${blobid}`,
+                        url: `/deleteBlob/${filename}`,
                     });
 
                     console.log(result);
-                    //location.reload();
+                    location.reload();
                 } catch (error) {
                     console.log(error);
                 }
