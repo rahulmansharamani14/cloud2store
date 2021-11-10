@@ -14,4 +14,8 @@ a {
     margin-bottom: 10px;
 }
 
+.thumbnail {
+border: 0;
+}
+
 

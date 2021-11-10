@@ -18,7 +18,10 @@ const FileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+
     versions: [{ hashedvalue: { type: String, required: true }, version: { type: Number } }],
+
+
 });
 
 const File = mongoose.model("File", FileSchema);

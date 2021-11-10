@@ -143,8 +143,8 @@ router.post("/upload", uploadStrategy, async (req, res) => {
 
 router.delete("/deleteBlob", auth.ensureAuthenticated, async (req, res, next) => {
     const containerName = req.user["_id"].toString();
-    const state_db = await fileController.deleteBlobCosmos(req.user["_id"], req.body.filename);
-    const state_blob = await fileController.blobDelete(containerName, req.body.filename);
+    const state_db = await fileController.deleteBlobDB(req.user["_id"], req.body.filename);
+    const state_blob = await fileController.DeleteFile(containerName, req.body.filename);
     if (state_db && state_blob) {
         res.json({
             success: true,
