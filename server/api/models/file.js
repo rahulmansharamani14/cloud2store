@@ -13,14 +13,12 @@ const FileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    hashedvalue: {
-        type: String,
-        required: true,
-    },
+
     user_id: {
         type: String,
         required: true,
     },
+    versions: [{ hashedvalue: { type: String, required: true }, version: { type: Number } }],
 });
 
 const File = mongoose.model("File", FileSchema);
