@@ -1,4 +1,4 @@
-body {
+/* body {
     padding: 50px;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
@@ -13,9 +13,8 @@ a {
     max-width: fit-content;
     margin-bottom: 10px;
 }
+ */
 
-.thumbnail {
-border: 0;
+#image-dev{
+   padding: 50px; 
 }
-
-
