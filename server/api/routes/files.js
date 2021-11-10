@@ -41,7 +41,7 @@ router.post("/upload", uploadStrategy, async (req, res) => {
     console.log(req.file);
 
     const containerName = req.user["_id"].toString();
-    const blobName = getBlobName(req.file.originalname),
+    const blobName = req.file.originalname,
         stream = getStream(req.file.buffer),
         streamLength = req.file.buffer.length;
 
@@ -112,6 +112,44 @@ router.post("/upload", uploadStrategy, async (req, res) => {
         .catch((error) => {
             console.log("Error", error);
         });
+});
+
+router.delete("/deleteBlob/:blobname/:blobid", async (req, res) => {
+    const containerName = req.user["_id"].toString();
+    const blobname = req.params.blobname.toString();
+    const blobid = req.params.blobid;
+
+    console.log("blobname: ", blobname, typeof blobname);
+    console.log("blobid: ", blobid);
+
+    // Delete blob from Azure Storage
+    const response = blobService.deleteBlob(containerName, blobname, (err, response) => {
+        if (err) {
+            // res.status(500);
+            // res.json({
+            //     err,
+            // });
+
+            console.error(err);
+        }
+
+        console.log("Deleted from Azure:", response);
+
+        if (response == true) {
+            res.json({ msg: "Success" });
+        }
+    });
+
+    // Delete blob from Mongodb
+    const deletedfile = File.findByIdAndDelete(blobid, (err, docs) => {
+        if (err) {
+            res.json({ err });
+            return;
+        }
+
+        console.log("Removed File from mongodb : ", docs);
+        //return docs;
+    });
 });
 
 module.exports = router;
