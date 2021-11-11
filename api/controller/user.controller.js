@@ -13,7 +13,14 @@ module.exports.profile = async (req, res, next) => {
         //     files,
         // });
         const files = data.files;
-        // console.log("files: ", files);
+        console.log("files: ", files);
+
+        const latestversions = files.map((file, count) => {
+            //console.log(file.versions);
+            const fileversions = file.versions;
+            const latestVersions = fileversions[fileversions.length - 1];
+            console.log("latest versions: ", latestVersions);
+        });
 
         res.render("pages/profile", { user: req.user, files });
     } catch (error) {
