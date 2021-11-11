@@ -116,6 +116,8 @@
                                                     <th>S.No.</th>
                                                     <th scope="col">File Name</th>
                                                     <th scope="col">Mime Type</th>
+                                                    <th scope="col">Latest Version No.</th>
+                                                    <th scope="col">Latest VersionID</th>
                                                     <th scope="col">Download</th>
                                                     <th scope="col">Delete</th>
                                                 </tr>
@@ -127,6 +129,8 @@
                                                     <td class="text-white"><%= index + 1 %> </td>
                                                     <th class="text-white" scope="row"><%= file.filename %> </th>
                                                     <td class="text-white" > <%= file.mimetype %> </td>
+                                                    <td class="text-white" > <%= file.versions[file.versions.length - 1].version %> </td>
+                                                    <td class="text-white" > <%= file.versions[file.versions.length - 1].versionId %> </td>
                                                     <td> <a href="<%= file.downloadURL %>" class="btn btn-primary">Download</a></td>
                                                     <td> <a data-blobid="<%= file._id%>" data-blobname="<%= file.filename %> " id="delete-file" class="btn btn-danger">Delete</a></td>
                                                 </tr>
