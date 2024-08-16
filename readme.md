@@ -1,6 +1,6 @@
-# Azure Project
+# cloud2store
 
-cloud2store - A file versioning storage system for versioning and storing your all types of files.
+A file versioning storage system for versioning and storing your all types of files.
 
 ## Installation
 
